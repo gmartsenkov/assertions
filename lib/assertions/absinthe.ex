@@ -53,7 +53,7 @@ defmodule Assertions.Absinthe do
 
     ## Example
 
-        iex> document_for(:user, 2)
+        document_for(:user, 2)
         \"""
         name
         age
@@ -83,13 +83,13 @@ defmodule Assertions.Absinthe do
 
     ## Example
 
-        iex> query = "{ user { #{document_for(:user, 2)} } }"
-        iex> expected = %{"user" => %{"name" => "Bob", "posts" => [%{"title" => "A post"}]}}
-        iex> assert_response_equals(query, expected)
+        query = "{ user { #{document_for(:user, 2)} } }"
+        expected = %{ data: %{"user" => %{"name" => "Bob", "posts" => [%{"title" => "A post"}]}}}
+        assert_response_equals(query, expected)
     """
     @spec assert_response_equals(module(), String.t(), map(), Keyword.t()) :: :ok | no_return()
     def assert_response_equals(schema, document, expected_response, options) do
-      ExUnit.Assertions.assert {:ok, %{data: response}} = Absinthe.run(document, schema, options)
+      ExUnit.Assertions.assert {:ok, response} = Absinthe.run(document, schema, options)
       Assertions.assert_maps_equal(response, expected_response, Map.keys(response))
     end
 
@@ -102,17 +102,16 @@ defmodule Assertions.Absinthe do
 
     ## Example
 
-        iex> query = "{ user { #{document_for(:user, 2)} } }"
-        iex> assert_response_matches(query) do
-           %{"user" => %{"name" => "B" <> _, "posts" => posts}}
+        query = "{ user { #{document_for(:user, 2)} } }"
+        assert_response_matches(query) do
+          %{"user" => %{"name" => "B"}}
         end
-        iex> assert length(posts) == 1
     """
     @spec assert_response_matches(module(), String.t(), Keyword.t(), Macro.expr()) ::
             :ok | no_return()
     defmacro assert_response_matches(schema, document, options, do: expr) do
       quote do
-        ExUnit.Assertions.assert {:ok, %{data: unquote(expr)}} =
+        ExUnit.Assertions.assert {:ok, unquote(expr)} =
                 Absinthe.run(unquote(document), unquote(schema), unquote(options))
       end
     end
